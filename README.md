@@ -21,7 +21,7 @@ func main() {
 
 func DisPlay() *ui.PageGroup {
 	gp := ui.NewPageGroup("日志查询", "layui-icon layui-icon-template-1")
-
+cd ..
 	gp.AddFrame(newFrame("/loggrep1", "内网日志", "layui-icon layui-icon-face-cry",
 		[]string{"grep?s=SL_SERVER_ID&t=SL_LOG_TYPE&d=SL_TIME_SEL&h=SL_TIME_HOUR&u=SL_ROLE_ID&c=SL_CONTENT>>"}))
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/you285168/golayui/ui"
+	"github.com/you285168/go-layui/ui"
 )
 
 var TOKEN_EXPIRE_TIME = 365 * 24 * time.Hour //默认一年

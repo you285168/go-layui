@@ -1,6 +1,6 @@
 package app
 
-import . "github.com/you285168/golayui/ui"
+import . "github.com/you285168/go-layui/ui"
 
 func UserSetting(a *App) {
 	if !a.admin {

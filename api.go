@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/you285168/golayui/ui"
+	"github.com/you285168/go-layui/ui"
 )
 
 type UserSign struct {

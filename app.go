@@ -149,6 +149,8 @@ func (a *App) Run() error {
 		})
 	}
 	HandleButtonClick(a)
+	HandleMergelay(a)
+	HandleUpload(a)
 
 	if a.admin {
 		h.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -14,6 +14,9 @@ type UIFactory interface {
 	AddLegend(text string) UIFactory
 	AddEditer(prompt, text string, password bool, assginto **UIEditer) UIFactory
 	AddTimePicker(format, displaytype string, val int64, assginto **UITimePicker) UIFactory
+	AddUpload(text string, onupload UploadFile, assginto **UIUpload) UIFactory
+	AddCheckBox(text string, checked bool, assginto **UICheckBox) UIFactory
+	AddMergely(lf, rf string, onf OnGetFile, assginto **UIMergely) UIFactory
 }
 
 type uiFactory struct {
@@ -26,6 +29,30 @@ func NewFactory(f UIFactory) *uiFactory {
 
 func (f *uiFactory) AddButton(text string, event OnButtonClick, assginto **UIButton) UIFactory {
 	b := NewButton(text, event)
+	if assginto != nil {
+		*assginto = b
+	}
+	return f.UIFactory.AddElem(b)
+}
+
+func (f *uiFactory) AddMergely(lf, rf string, onf OnGetFile, assginto **UIMergely) UIFactory {
+	b := NewMergely(lf, rf, onf)
+	if assginto != nil {
+		*assginto = b
+	}
+	return f.UIFactory.AddElem(b)
+}
+
+func (f *uiFactory) AddCheckBox(text string, checked bool, assginto **UICheckBox) UIFactory {
+	b := NewCheckBox(text, checked)
+	if assginto != nil {
+		*assginto = b
+	}
+	return f.UIFactory.AddElem(b)
+}
+
+func (f *uiFactory) AddUpload(text string, onupload UploadFile, assginto **UIUpload) UIFactory {
+	b := NewUpload(text, onupload)
 	if assginto != nil {
 		*assginto = b
 	}

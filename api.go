@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -215,7 +214,6 @@ func (a *App) restoreElem(params map[string]string) {
 func HandleButtonClick(a *App) {
 	a.handler.HandleFunc("/button_click", func(w http.ResponseWriter, r *http.Request) {
 		params := a.ParseHttpParams(r)
-		fmt.Println(params)
 		event_id, ok := params["event_id"]
 		url_router, ok1 := params["url_router"]
 		user := params["username"]
@@ -306,5 +304,89 @@ func HandleClear(a *App) {
 		res := &ui.ApiRsp{0, "清理缓存成功"}
 		ret_json, _ := json.Marshal(res)
 		io.WriteString(w, string(ret_json))
+	})
+}
+
+func HandleMergelay(a *App) {
+	a.handler.HandleFunc("/api/mergely", func(w http.ResponseWriter, r *http.Request) {
+		params := a.ParseHttpParams(r)
+		user := params["username"]
+		event_id := params["event_id"]
+		url_router := params["url_router"]
+		file := params["file"]
+
+		res := &ui.ApiRsp{}
+		defer func() {
+			ret_json, _ := json.Marshal(res)
+			io.WriteString(w, string(ret_json))
+		}()
+
+		h := a.GetElem(user, url_router, event_id)
+		if h == nil {
+			res.Code = 1
+			res.Msg = "no mergely item id=" + event_id
+			return
+		}
+		mer := h.(*ui.UIMergely)
+
+		if mer.F == nil {
+			res.Code = 1
+			res.Msg = "you should overload UIMergely.OnGetFile"
+		} else {
+			res.Msg = mer.F(user, file)
+		}
+	})
+}
+
+func HandleUpload(a *App) {
+	a.handler.HandleFunc("/api/upload", func(w http.ResponseWriter, r *http.Request) {
+		res := &ui.Response{}
+		defer func() {
+			ret_json, _ := json.Marshal(res)
+			io.WriteString(w, string(ret_json))
+		}()
+
+		params := a.ParseHttpParams(r)
+		user := params["username"]
+		event_id := params["event_id"]
+		url_router := params["url_router"]
+		res.RedirectUrl = url_router
+		up := a.GetElem(user, url_router, event_id)
+		if up == nil {
+			res.Error = "no upload item"
+			return
+		}
+		u1 := up.(*ui.UIUpload)
+		var fileName string
+		var fileData []byte
+
+		reader, err := r.MultipartReader()
+		if err != nil {
+			res.Error = err.Error()
+			return
+		}
+
+		for {
+			part, err := reader.NextPart()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				res.Error = err.Error()
+				return
+			}
+			if part.FileName() == "" { // this is FormData
+				//data, _ := ioutil.ReadAll(part)
+				//fmt.Printf("FormData=[%s]\n", string(data))
+			} else { // This is FileData
+				fileName = part.FileName()
+				data, _ := io.ReadAll(part)
+				fileData = append(fileData, data...)
+			}
+		}
+
+		if u1.OnUpload != nil {
+			u1.OnUpload(user, params, fileName, fileData)
+		}
 	})
 }

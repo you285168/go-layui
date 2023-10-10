@@ -415,7 +415,6 @@ func TableAddCols(param map[string]string) []string {
 func HandleTable(a *App) {
 	a.handler.HandleFunc("/api/table", func(w http.ResponseWriter, r *http.Request) {
 		params := a.ParseHttpParams(r)
-		fmt.Println("HandleTable", params)
 		user := params["username"]
 		event_id := params["event_id"]
 		url_router := params["url_router"]

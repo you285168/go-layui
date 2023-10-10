@@ -24,6 +24,6 @@ func UserSetting(a *App) {
 			return ResponseError("保存成功")
 		}
 		return ResponseError("保存失败")
-	}, nil)
+	})
 	a.AddFrame(frameUserSetting)
 }

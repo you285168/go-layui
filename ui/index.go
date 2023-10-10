@@ -1,3 +1,4 @@
+// index.go
 package ui
 
 var IndexHtml = `<!DOCTYPE html>

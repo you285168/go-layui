@@ -2,7 +2,7 @@ package ui
 
 type UIFactory interface {
 	AddElem(e HtmlElem) UIFactory
-	AddButton(text string, event OnButtonClick, assginto **UIButton) UIFactory
+	AddButton(text string, event OnButtonClick) UIFactory
 	AddLabel(text string) UIFactory
 	AddRow() UIFactory
 	AddText(text string, assginto **UIText) UIFactory
@@ -19,6 +19,8 @@ type UIFactory interface {
 	AddMergely(lf, rf string, onf OnGetFile, assginto **UIMergely) UIFactory
 	AddStaticTable(header []string, data [][]string) *UITable
 	AddTable(header []string, gd OnTableGetData) *UITable
+	AddToolTable(search bool, header []string, gd OnTableGetData, event OnTableEvent) *UITable
+	AddUserDefineTable(search bool, header, usrBtName []string, gd OnTableGetData, event OnTableUsrEvent) *UITable
 }
 
 type uiFactory struct {
@@ -30,18 +32,31 @@ func NewFactory(f UIFactory) *uiFactory {
 }
 
 func (f *uiFactory) AddStaticTable(header []string, data [][]string) *UITable {
-	return NewStaticTable(header, data)
+	t := NewStaticTable(header, data)
+	f.UIFactory.AddElem(t)
+	return t
 }
 
 func (f *uiFactory) AddTable(header []string, gd OnTableGetData) *UITable {
-	return NewTable(header, gd)
+	t := NewTable(header, gd)
+	f.UIFactory.AddElem(t)
+	return t
 }
 
-func (f *uiFactory) AddButton(text string, event OnButtonClick, assginto **UIButton) UIFactory {
+func (f *uiFactory) AddToolTable(search bool, header []string, gd OnTableGetData, event OnTableEvent) *UITable {
+	t := NewToolTable(search, header, gd, event)
+	f.UIFactory.AddElem(t)
+	return t
+}
+
+func (f *uiFactory) AddUserDefineTable(search bool, header, usrBtName []string, gd OnTableGetData, event OnTableUsrEvent) *UITable {
+	t := NewUserDefineTable(search, header, usrBtName, gd, event)
+	f.UIFactory.AddElem(t)
+	return t
+}
+
+func (f *uiFactory) AddButton(text string, event OnButtonClick) UIFactory {
 	b := NewButton(text, event)
-	if assginto != nil {
-		*assginto = b
-	}
 	return f.UIFactory.AddElem(b)
 }
 

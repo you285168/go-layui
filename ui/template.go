@@ -1,3 +1,4 @@
+// template.go
 package ui
 
 var HtmlPage1 = `<!DOCTYPE html>

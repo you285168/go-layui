@@ -154,6 +154,7 @@ func (a *App) Run() error {
 		})
 	}
 	HandleButtonClick(a)
+	HandleTable(a)
 	HandleMergelay(a)
 	HandleUpload(a)
 

@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -387,6 +388,127 @@ func HandleUpload(a *App) {
 
 		if u1.OnUpload != nil {
 			u1.OnUpload(user, params, fileName, fileData)
+		}
+	})
+}
+
+type TableResponse struct {
+	Code  int64         `json:"code"`
+	Count int64         `json:"count"`
+	data  []interface{} `json:"data"`
+	Msg   string        `json:"msg"`
+}
+
+func TableAddCols(param map[string]string) []string {
+	cols := make([]string, 0)
+	for i := 0; i < 1000; i++ {
+		is := strconv.Itoa(i)
+		if n, ok := param[is]; ok {
+			cols = append(cols, n)
+		} else {
+			return cols
+		}
+	}
+	return cols
+}
+
+func HandleTable(a *App) {
+	a.handler.HandleFunc("/api/table", func(w http.ResponseWriter, r *http.Request) {
+		params := a.ParseHttpParams(r)
+		user := params["username"]
+		event_id := params["event_id"]
+		url_router := params["url_router"]
+		tbnew := a.GetElem(user, url_router, event_id)
+		if tbnew == nil {
+			io.WriteString(w, `{"code":1,"msg":"no table","count":0,"data":[]}`)
+			return
+		}
+		tb := tbnew.(*ui.UITable)
+		oper := params["oper"]
+		if oper == "data" {
+			page := params["page"]
+			limit := params["limit"]
+			p, _ := strconv.Atoi(page)
+			l, _ := strconv.Atoi(limit)
+			sr := params["key[search]"]
+			var cnt int
+			var data [][]string
+			if tb.FuncData != nil {
+				cnt, data = tb.FuncData(user, p, l, sr)
+			} else {
+				cnt, data = tb.TableGetData(user, p, l, sr)
+			}
+			retData := ""
+			ln := 0
+			for _, cols := range data {
+				if len(tb.Header) == len(cols) {
+					if ln > 0 {
+						retData += ","
+					}
+					cc := "{"
+					for i, c := range cols {
+						if i > 0 {
+							cc += ","
+						}
+						k := "col" + strconv.Itoa(i)
+						kk, _ := json.Marshal(&k)
+						v, _ := json.Marshal(&c)
+						cc += string(kk) + ":" + string(v)
+					}
+					cc += "}"
+					retData += cc
+					ln++
+				}
+			}
+			io.WriteString(w, fmt.Sprintf("{\"code\":0,\"msg\":\"\",\"count\":%d,\"data\":[%s]}", cnt, retData))
+		} else if oper == "edit" {
+			var res ui.ApiRsp
+			if tb.FuncEvent != nil {
+				res = tb.FuncEvent(user, ui.TOEdit, TableAddCols(params))
+			} else {
+				res = tb.TableEvent(user, ui.TOEdit, TableAddCols(params))
+			}
+
+			ret_json, _ := json.Marshal(res)
+			io.WriteString(w, string(ret_json))
+		} else if oper == "del" {
+			var res ui.ApiRsp
+			if tb.FuncEvent != nil {
+				res = tb.FuncEvent(user, ui.TODel, TableAddCols(params))
+			} else {
+				res = tb.TableEvent(user, ui.TODel, TableAddCols(params))
+			}
+
+			ret_json, _ := json.Marshal(res)
+			io.WriteString(w, string(ret_json))
+		} else if oper == "add" {
+			var res ui.ApiRsp
+			if tb.FuncEvent != nil {
+				res = tb.FuncEvent(user, ui.TOAdd, TableAddCols(params))
+			} else {
+				res = tb.TableEvent(user, ui.TOAdd, TableAddCols(params))
+			}
+
+			ret_json, _ := json.Marshal(res)
+			io.WriteString(w, string(ret_json))
+		} else if oper == "url" {
+			if tb.FuncUrl != nil {
+				href := params["href"]
+				io.WriteString(w, tb.FuncUrl(user, href))
+			} else {
+				io.WriteString(w, Html404)
+			}
+		} else if strings.HasPrefix(oper, "user_") {
+			res := &ui.Response{Error: "error param"}
+			ev, e := strconv.Atoi(oper[5:])
+			if e == nil && tb.FuncUsrEvent != nil {
+				res = tb.FuncUsrEvent(user, ev, TableAddCols(params))
+			}
+
+			ret_json, _ := json.Marshal(res)
+			io.WriteString(w, string(ret_json))
+		} else {
+			io.WriteString(w, `{"code":1,"msg":"error params","count":0,"data":[]}`)
 		}
 	})
 }

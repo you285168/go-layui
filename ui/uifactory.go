@@ -17,6 +17,8 @@ type UIFactory interface {
 	AddUpload(text string, onupload UploadFile, assginto **UIUpload) UIFactory
 	AddCheckBox(text string, checked bool, assginto **UICheckBox) UIFactory
 	AddMergely(lf, rf string, onf OnGetFile, assginto **UIMergely) UIFactory
+	AddStaticTable(header []string, data [][]string, assginto **UITable) UIFactory
+	AddTable(header []string, gd OnTableGetData, assginto **UITable) UIFactory
 }
 
 type uiFactory struct {
@@ -25,6 +27,22 @@ type uiFactory struct {
 
 func NewFactory(f UIFactory) *uiFactory {
 	return &uiFactory{UIFactory: f}
+}
+
+func (f *uiFactory) AddStaticTable(header []string, data [][]string, assginto **UITable) UIFactory {
+	t := NewStaticTable(header, data)
+	if assginto != nil {
+		*assginto = t
+	}
+	return f.UIFactory.AddElem(t)
+}
+
+func (f *uiFactory) AddTable(header []string, gd OnTableGetData, assginto **UITable) UIFactory {
+	t := NewTable(header, gd)
+	if assginto != nil {
+		*assginto = t
+	}
+	return f.UIFactory.AddElem(t)
 }
 
 func (f *uiFactory) AddButton(text string, event OnButtonClick, assginto **UIButton) UIFactory {

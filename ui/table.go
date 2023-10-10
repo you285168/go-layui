@@ -90,14 +90,17 @@ func NewUserDefineTable(search bool, header, usrBtName []string, gd OnTableGetDa
 }
 
 func (table *UITable) Clone() HtmlElem {
-	nt := newTable(cloneElem(table.Id, "table", HtmlTable), table.Header)
+	nt := &UITable{}
 	*nt = *table
-	c := make([]int, len(table.ColType))
+	h := make([]string, len(table.Header))
+	copy(h, table.Header)
+	c := make([]int, len(table.Header))
 	copy(c, table.ColType)
-	cs := make([]int, len(table.ColSort))
+	cs := make([]int, len(table.Header))
 	copy(cs, table.ColSort)
-	ct := make([]string, len(table.ColTemplate))
+	ct := make([]string, len(table.Header))
 	copy(ct, table.ColTemplate)
+	nt.Header = h
 	nt.ColType = c
 	nt.ColSort = cs
 	nt.ColTemplate = ct

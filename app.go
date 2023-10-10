@@ -125,6 +125,11 @@ func (a *App) Run() error {
 		}
 		http.StripPrefix("/uilib/", http.FileServer(UILib)).ServeHTTP(resp, req)
 	}))
+	h.Handle("/mergely", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		params := a.ParseHttpParams(r)
+		extend := "&event_id=" + params["event_id"] + "&url_router=" + params["url_router"]
+		w.Write([]byte(ui.MergelyPage(params["fl"]+extend, params["fr"]+extend)))
+	}))
 
 	for r, _ := range a.Frames {
 		tempr := r
